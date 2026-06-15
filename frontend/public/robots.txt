@@ -1,0 +1,7 @@
+User-agent: *
+Disallow: /admin
+Disallow: /api
+Disallow: /dashboard
+Disallow: /profile
+
+Sitemap: https://ias-b3-1-lyon-g1-jjrh.onrender.com/sitemap.xml

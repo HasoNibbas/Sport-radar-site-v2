@@ -1,0 +1,12 @@
+# render.yaml
+services:
+  - type: static                  # Type de service : site statique
+    name: sportradar-frontend     # Nom que vous choisirez sur Render
+    env: static                   # Environnement statique (pour Vite/React)
+    region: frankfurt             # Région du datacenter (ex. frankfurt, oregon)
+    branch: main                  # Branche Git déclenchant le déploiement
+    buildCommand: npm install && npm run build
+    publishPath: dist             # Dossier généré par Vite (build output)
+    staticPublish:
+      fallback: index.html        # Fallback pour SPA (React Router)
+
