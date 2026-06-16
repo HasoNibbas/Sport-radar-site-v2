@@ -136,6 +136,7 @@ STORAGES = {
 
 # --- 11. Modèle d'utilisateur personnalisé ---
 AUTH_USER_MODEL = 'users.CustomUser'
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # --- 12. Configuration des frameworks (DRF, JWT, etc.) ---
 REST_FRAMEWORK = {
@@ -148,8 +149,24 @@ SPECTACULAR_SETTINGS = {'TITLE': 'SportRadar API', 'DESCRIPTION': 'API pour le p
 JAZZMIN_SETTINGS = {'site_title': 'SportRadar Admin', 'welcome_sign': 'Bienvenue dans SportRadar', 'show_sidebar': True, 'navigation_expanded': True}
 
 # --- 13. CORS et CSRF ---
-CORS_ALLOWED_ORIGINS = ["http://localhost:3000", "http://127.0.0.1:3000", "http://localhost:5173","http://localhost:5175", "https://sportradar-front.onrender.com"]
-CSRF_TRUSTED_ORIGINS = ["http://localhost:3000", "http://127.0.0.1:3000", "http://localhost:5173","http://localhost:5175", "https://sportradar-front.onrender.com"]
+DEFAULT_CORS_ORIGINS = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "http://localhost:5173",
+    "http://localhost:5175",
+    "https://sportradar-front.onrender.com",
+]
+
+extra_cors_origins = os.getenv('CORS_ALLOWED_ORIGINS', '')
+parsed_extra_origins = [origin.strip() for origin in extra_cors_origins.split(',') if origin.strip()]
+CORS_ALLOWED_ORIGINS = DEFAULT_CORS_ORIGINS + parsed_extra_origins
+CSRF_TRUSTED_ORIGINS = list(CORS_ALLOWED_ORIGINS)
+
+# Autorise explicitement toutes les origines lorsqu'une variable d'environnement
+# spécifique est définie. Utile pour déployer sur un domaine front-end différent
+# temporairement sans modifier le code.
+if os.getenv('CORS_ALLOW_ALL_ORIGINS', 'False').lower() in ('1', 'true', 'yes'):
+    CORS_ALLOW_ALL_ORIGINS = True
 
 # --- 14. Configuration de Cloudinary ---
 CLOUDINARY_STORAGE = {
