@@ -122,17 +122,39 @@ MEDIA_URL = '/media/'
 
 # Compatibilité packages tiers
 STATICFILES_STORAGE = "django.contrib.staticfiles.storage.StaticFilesStorage"
-DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
 
-# Configuration du stockage pour Django 4.2+
-STORAGES = {
-    "default": {
-        "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
-    },
-    "staticfiles": {
-        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+# --- Stockage des fichiers : Cloudinary si configuré, sinon stockage local ---
+_cloud_name = os.getenv('CLOUDINARY_CLOUD_NAME')
+_cloud_key = os.getenv('CLOUDINARY_API_KEY')
+_cloud_secret = os.getenv('CLOUDINARY_API_SECRET')
+
+if _cloud_name and _cloud_key and _cloud_secret:
+    CLOUDINARY_STORAGE = {
+        'CLOUD_NAME': _cloud_name,
+        'API_KEY': _cloud_key,
+        'API_SECRET': _cloud_secret,
     }
-}
+    DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
+    STORAGES = {
+        "default": {
+            "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
+        },
+        "staticfiles": {
+            "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+        }
+    }
+else:
+    # Fallback local storage to avoid runtime failures when cloudinary is not configured
+    DEFAULT_FILE_STORAGE = "django.core.files.storage.FileSystemStorage"
+    MEDIA_ROOT = BASE_DIR / 'media'
+    STORAGES = {
+        "default": {
+            "BACKEND": "django.core.files.storage.FileSystemStorage",
+        },
+        "staticfiles": {
+            "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+        }
+    }
 
 # --- 11. Modèle d'utilisateur personnalisé ---
 AUTH_USER_MODEL = 'users.CustomUser'
