@@ -183,6 +183,7 @@ DEFAULT_CORS_ORIGINS = [
     "http://localhost:5173",
     "http://localhost:5175",
     "https://sportradar-front.onrender.com",
+    "https://main.d38a9d237uyp96.amplifyapp.com",
 ]
 
 extra_cors_origins = os.getenv('CORS_ALLOWED_ORIGINS', '')
