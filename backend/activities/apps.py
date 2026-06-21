@@ -9,11 +9,9 @@ class ActivitiesConfig(AppConfig):
         from .seed import create_demo_data
         
         def run_seed(sender, **kwargs):
-            """Auto-seed demo data after migrations if database is empty."""
+            """Auto-seed demo data after migrations."""
             from .models import Activity
-            if Activity.objects.count() == 0:
-                created = create_demo_data()
-                if created > 0:
-                    print(f"✅ Auto-seeded {created} demo activities")
+            # Always ensure demo data is present and up-to-date
+            create_demo_data()
         
         post_migrate.connect(run_seed, sender=self)
