@@ -25,17 +25,26 @@ const CoachDetailPage: React.FC = () => {
         ])
             .then(([coachResponse, activitiesResponse]) => {
                 const coachData = coachResponse.data;
-                const activitiesData = activitiesResponse.data.filter(activity  => activity?.instructor?.id==id);
-                console.log('Coach activities:', activitiesResponse);
+                const rawActivities = activitiesResponse.data as unknown;
+                const activitiesList: Activity[] = Array.isArray(rawActivities)
+                    ? rawActivities
+                    : (rawActivities && typeof rawActivities === 'object' && Array.isArray((rawActivities as any).results))
+                        ? (rawActivities as any).results
+                        : [];
+                const activitiesData = activitiesList.filter(activity => String(activity?.instructor?.id) === String(id));
+                console.log('Coach activities:', activitiesData);
 
                 setCoach(coachData);
                 setActivities(activitiesData);
-                console.log("activitiesDataaaaaaaaaaa",activitiesData)
-                console.log("coachDataaaaaaaaaa",coachData)
+                console.log("activitiesDataaaaaaaaaaa", activitiesData)
+                console.log("coachDataaaaaaaaaa", coachData)
 
                 // ✅ Si le coach a une company, récupérer ses infos
-                if (coachData.company) {
-                    axiosInstance.get<Company>(`/companies/${coachData.company}/`)
+                const companyId = coachData.company && typeof coachData.company === 'object'
+                    ? (coachData.company as any).id
+                    : coachData.company;
+                if (companyId) {
+                    axiosInstance.get<Company>(`/api/companies/${companyId}/`)
                         .then(companyResponse => {
                             // Mettre à jour le coach avec les infos complètes de la company
                             setCoach(prev => prev ? {...prev, company: companyResponse.data} : null);
