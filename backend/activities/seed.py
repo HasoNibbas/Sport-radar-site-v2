@@ -8,9 +8,10 @@ from users.models import CustomUser
 
 
 def create_demo_data():
-    company, _ = Company.objects.update_or_create(
-        name="SportRadar Lyon",
-        defaults={
+    # Create multiple companies/salles de sport
+    companies_data = [
+        {
+            "name": "SportRadar Lyon",
             "description": "Salle partenaire SportRadar pour les activites sportives et bien-etre.",
             "address": "12 Rue de la Republique",
             "city": "Lyon",
@@ -20,29 +21,129 @@ def create_demo_data():
             "sport_zen": True,
             "is_verified": True,
         },
-    )
+        {
+            "name": "Zen Studio Lyon",
+            "description": "Studio de yoga et bien-etre premium.",
+            "address": "45 Rue Anatole France",
+            "city": "Lyon",
+            "zip_code": "69003",
+            "phone_number": "+33 7 12 34 56 78",
+            "website": "https://zenstudio-lyon.fr",
+            "sport_zen": True,
+            "is_verified": True,
+        },
+        {
+            "name": "Gym Pro Elite",
+            "description": "Salle de sport haute performance avec equipements derniere generation.",
+            "address": "78 Avenue Jean Jaures",
+            "city": "Lyon",
+            "zip_code": "69007",
+            "phone_number": "+33 4 72 34 56 78",
+            "website": "https://gymelite-lyon.fr",
+            "sport_zen": False,
+            "is_verified": True,
+        },
+        {
+            "name": "Piscine Municipale Garibaldi",
+            "description": "Piscine olympique avec cours de natation professionnels.",
+            "address": "Rue Garibaldi",
+            "city": "Lyon",
+            "zip_code": "69001",
+            "phone_number": "+33 4 72 10 20 30",
+            "website": "https://piscine-garibaldi-lyon.fr",
+            "sport_zen": False,
+            "is_verified": True,
+        },
+        {
+            "name": "Dojo Central Martial Arts",
+            "description": "Centre de boxe, karate et arts martiaux.",
+            "address": "32 Rue de la Paix",
+            "city": "Lyon",
+            "zip_code": "69002",
+            "phone_number": "+33 6 87 65 43 21",
+            "website": "https://dojo-central-lyon.fr",
+            "sport_zen": False,
+            "is_verified": True,
+        },
+    ]
+    
+    companies = {}
+    for comp_data in companies_data:
+        name = comp_data.pop("name")
+        comp, _ = Company.objects.update_or_create(name=name, defaults=comp_data)
+        companies[name] = comp
 
-    coach, created = CustomUser.objects.update_or_create(
-        email="coach.demo@sportradar.fr",
-        defaults={
-            "username": "coachdemo",
+    # Create multiple coaches
+    coaches_data = [
+        {
+            "email": "alex.martin@sportradar.fr",
+            "username": "alex_martin",
             "first_name": "Alex",
             "last_name": "Martin",
-            "type": CustomUser.USER_TYPE_COACH,
-            "company": company,
-            "is_active": True,
+            "company": companies["SportRadar Lyon"],
+            "password": "demo12345",
         },
-    )
-    if created or not coach.has_usable_password():
-        coach.set_password("demo12345")
-        coach.save(update_fields=["password"])
+        {
+            "email": "marie.dubois@sportradar.fr",
+            "username": "marie_yoga",
+            "first_name": "Marie",
+            "last_name": "Dubois",
+            "company": companies["Zen Studio Lyon"],
+            "password": "demo12345",
+        },
+        {
+            "email": "thomas.bernard@gym.fr",
+            "username": "thomas_fitness",
+            "first_name": "Thomas",
+            "last_name": "Bernard",
+            "company": companies["Gym Pro Elite"],
+            "password": "demo12345",
+        },
+        {
+            "email": "sophie.lefevre@swim.fr",
+            "username": "sophie_swim",
+            "first_name": "Sophie",
+            "last_name": "Lefevre",
+            "company": companies["Piscine Municipale Garibaldi"],
+            "password": "demo12345",
+        },
+        {
+            "email": "david.moreau@boxing.fr",
+            "username": "david_boxing",
+            "first_name": "David",
+            "last_name": "Moreau",
+            "company": companies["Dojo Central Martial Arts"],
+            "password": "demo12345",
+        },
+    ]
+    
+    coaches = {}
+    for coach_data in coaches_data:
+        email = coach_data.pop("email")
+        username = coach_data.pop("username")
+        password = coach_data.pop("password")
+        coach, created = CustomUser.objects.update_or_create(
+            email=email,
+            defaults={
+                "username": username,
+                "type": CustomUser.USER_TYPE_COACH,
+                "is_active": True,
+                **{k: v for k, v in coach_data.items() if k != "password"},
+            },
+        )
+        if created or not coach.has_usable_password():
+            coach.set_password(password)
+            coach.save(update_fields=["password"])
+        coaches[username] = coach
 
     now = timezone.now()
     activities = [
+        # Yoga & Bien-etre (Zen Studio)
         {
             "name": "Yoga Matinal",
             "description": "Seance douce pour mobilite, respiration et energie.",
             "category": "Yoga",
+            "image": "https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=500&h=500&fit=crop",
             "location_address": "Parc de la Tete d'Or, Lyon",
             "start_time": now + timedelta(days=2, hours=9),
             "duration": timedelta(hours=1),
@@ -51,11 +152,30 @@ def create_demo_data():
             "level": Activity.LevelChoices.ALL,
             "venue": Activity.VenueChoices.OUTDOOR,
             "sport_zen": True,
+            "company": companies["Zen Studio Lyon"],
+            "instructor": coaches["marie_yoga"],
+        },
+        {
+            "name": "Yoga Vinyasa Dynamique",
+            "description": "Yoga fluide et energisant, parfait pour progresser.",
+            "category": "Yoga",
+            "image": "https://images.unsplash.com/photo-1588286840104-8957b019727f?w=500&h=500&fit=crop",
+            "location_address": "Studio Zen, Lyon 3",
+            "start_time": now + timedelta(days=3, hours=18),
+            "duration": timedelta(hours=1, minutes=15),
+            "max_participants": 15,
+            "price": "14.00",
+            "level": Activity.LevelChoices.BEGINNER,
+            "venue": Activity.VenueChoices.INDOOR,
+            "sport_zen": True,
+            "company": companies["Zen Studio Lyon"],
+            "instructor": coaches["marie_yoga"],
         },
         {
             "name": "Pilates Doux",
             "description": "Renforcement profond, posture et controle.",
             "category": "Pilates",
+            "image": "https://images.unsplash.com/photo-1566501357654-f21ff4e7dfb1?w=500&h=500&fit=crop",
             "location_address": "Studio Zen, Lyon 3",
             "start_time": now + timedelta(days=4, hours=18),
             "duration": timedelta(hours=1, minutes=15),
@@ -64,11 +184,31 @@ def create_demo_data():
             "level": Activity.LevelChoices.BEGINNER,
             "venue": Activity.VenueChoices.INDOOR,
             "sport_zen": True,
+            "company": companies["Zen Studio Lyon"],
+            "instructor": coaches["marie_yoga"],
         },
+        {
+            "name": "Meditation Guidee",
+            "description": "Pause calme pour recuperation et concentration.",
+            "category": "Bien-etre",
+            "image": "https://images.unsplash.com/photo-1608270861620-7c40f5ae9fa8?w=500&h=500&fit=crop",
+            "location_address": "Salle SportRadar Lyon",
+            "start_time": now + timedelta(days=1, hours=8),
+            "duration": timedelta(minutes=50),
+            "max_participants": 20,
+            "price": "8.00",
+            "level": Activity.LevelChoices.ALL,
+            "venue": Activity.VenueChoices.INDOOR,
+            "sport_zen": True,
+            "company": companies["SportRadar Lyon"],
+            "instructor": coaches["alex_martin"],
+        },
+        # Fitness & HIIT (Gym Pro Elite)
         {
             "name": "HIIT Energie",
             "description": "Circuit cardio intense pour booster l'endurance.",
             "category": "Fitness",
+            "image": "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=500&h=500&fit=crop",
             "location_address": "Gym Pro, Lyon 7",
             "start_time": now + timedelta(days=5, hours=19),
             "duration": timedelta(minutes=45),
@@ -77,11 +217,47 @@ def create_demo_data():
             "level": Activity.LevelChoices.INTERMEDIATE,
             "venue": Activity.VenueChoices.INDOOR,
             "sport_zen": False,
+            "company": companies["Gym Pro Elite"],
+            "instructor": coaches["thomas_fitness"],
         },
+        {
+            "name": "Musculation Avancee",
+            "description": "Seance de renforcement musculaire avec poids.",
+            "category": "Fitness",
+            "image": "https://images.unsplash.com/photo-1574680178050-55c6a6c01f35?w=500&h=500&fit=crop",
+            "location_address": "Gym Pro, Lyon 7",
+            "start_time": now + timedelta(days=6, hours=17),
+            "duration": timedelta(hours=1, minutes=30),
+            "max_participants": 15,
+            "price": "18.00",
+            "level": Activity.LevelChoices.ADVANCED,
+            "venue": Activity.VenueChoices.INDOOR,
+            "sport_zen": False,
+            "company": companies["Gym Pro Elite"],
+            "instructor": coaches["thomas_fitness"],
+        },
+        {
+            "name": "Cardio Boost",
+            "description": "Seance cardio intensive sur tapis et velos.",
+            "category": "Fitness",
+            "image": "https://images.unsplash.com/photo-1552359734-3b5a03b1a65b?w=500&h=500&fit=crop",
+            "location_address": "Gym Pro, Lyon 7",
+            "start_time": now + timedelta(days=2, hours=18),
+            "duration": timedelta(minutes=50),
+            "max_participants": 25,
+            "price": "12.00",
+            "level": Activity.LevelChoices.BEGINNER,
+            "venue": Activity.VenueChoices.INDOOR,
+            "sport_zen": False,
+            "company": companies["Gym Pro Elite"],
+            "instructor": coaches["thomas_fitness"],
+        },
+        # Natation (Piscine Municipale)
         {
             "name": "Natation Dynamique",
             "description": "Travail technique et cardio en bassin.",
             "category": "Natation",
+            "image": "https://images.unsplash.com/photo-1576610616656-570f080db29c?w=500&h=500&fit=crop",
             "location_address": "Piscine Garibaldi, Lyon",
             "start_time": now + timedelta(days=7, hours=12),
             "duration": timedelta(hours=1),
@@ -90,24 +266,47 @@ def create_demo_data():
             "level": Activity.LevelChoices.ALL,
             "venue": Activity.VenueChoices.INDOOR,
             "sport_zen": False,
+            "company": companies["Piscine Municipale Garibaldi"],
+            "instructor": coaches["sophie_swim"],
         },
         {
-            "name": "Meditation Guidee",
-            "description": "Pause calme pour recuperation et concentration.",
-            "category": "Bien-etre",
-            "location_address": "Salle SportRadar Lyon",
-            "start_time": now + timedelta(days=9, hours=8),
-            "duration": timedelta(minutes=50),
-            "max_participants": 16,
-            "price": "8.00",
+            "name": "Initiation Natation",
+            "description": "Cours pour debutants, apprentissage des bases.",
+            "category": "Natation",
+            "image": "https://images.unsplash.com/photo-1577271768155-bee7a86cec10?w=500&h=500&fit=crop",
+            "location_address": "Piscine Garibaldi, Lyon",
+            "start_time": now + timedelta(days=3, hours=14),
+            "duration": timedelta(hours=1, minutes=30),
+            "max_participants": 8,
+            "price": "16.00",
+            "level": Activity.LevelChoices.BEGINNER,
+            "venue": Activity.VenueChoices.INDOOR,
+            "sport_zen": False,
+            "company": companies["Piscine Municipale Garibaldi"],
+            "instructor": coaches["sophie_swim"],
+        },
+        {
+            "name": "Aqua Fitness",
+            "description": "Fitness en piscine, activite douce et efficace.",
+            "category": "Natation",
+            "image": "https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=500&h=500&fit=crop",
+            "location_address": "Piscine Garibaldi, Lyon",
+            "start_time": now + timedelta(days=8, hours=10),
+            "duration": timedelta(hours=1),
+            "max_participants": 12,
+            "price": "10.00",
             "level": Activity.LevelChoices.ALL,
             "venue": Activity.VenueChoices.INDOOR,
-            "sport_zen": True,
+            "sport_zen": False,
+            "company": companies["Piscine Municipale Garibaldi"],
+            "instructor": coaches["sophie_swim"],
         },
+        # Boxe & Arts Martiaux (Dojo Central)
         {
             "name": "Boxe Initiation",
             "description": "Bases techniques, coordination et condition physique.",
             "category": "Boxe",
+            "image": "https://images.unsplash.com/photo-1549720696-c15cc9033d34?w=500&h=500&fit=crop",
             "location_address": "Dojo Central, Lyon 2",
             "start_time": now + timedelta(days=11, hours=18),
             "duration": timedelta(hours=1, minutes=30),
@@ -116,18 +315,87 @@ def create_demo_data():
             "level": Activity.LevelChoices.BEGINNER,
             "venue": Activity.VenueChoices.INDOOR,
             "sport_zen": False,
+            "company": companies["Dojo Central Martial Arts"],
+            "instructor": coaches["david_boxing"],
+        },
+        {
+            "name": "Boxe Avancee",
+            "description": "Perfectionnement technique et sparring.",
+            "category": "Boxe",
+            "image": "https://images.unsplash.com/photo-1478098711619-69891b0ec21a?w=500&h=500&fit=crop",
+            "location_address": "Dojo Central, Lyon 2",
+            "start_time": now + timedelta(days=10, hours=19),
+            "duration": timedelta(hours=1, minutes=45),
+            "max_participants": 12,
+            "price": "20.00",
+            "level": Activity.LevelChoices.ADVANCED,
+            "venue": Activity.VenueChoices.INDOOR,
+            "sport_zen": False,
+            "company": companies["Dojo Central Martial Arts"],
+            "instructor": coaches["david_boxing"],
+        },
+        {
+            "name": "Karate Enfants",
+            "description": "Cours de karate pour enfants de 6 a 12 ans.",
+            "category": "Karate",
+            "image": "https://images.unsplash.com/photo-1517836357463-d25ddfcbf042?w=500&h=500&fit=crop",
+            "location_address": "Dojo Central, Lyon 2",
+            "start_time": now + timedelta(days=4, hours=16),
+            "duration": timedelta(hours=1),
+            "max_participants": 10,
+            "price": "12.00",
+            "level": Activity.LevelChoices.BEGINNER,
+            "venue": Activity.VenueChoices.INDOOR,
+            "sport_zen": False,
+            "company": companies["Dojo Central Martial Arts"],
+            "instructor": coaches["david_boxing"],
+        },
+        # Additional sports at SportRadar
+        {
+            "name": "Zumba Party",
+            "description": "Danse dynamique et energisante sur musique latine.",
+            "category": "Danse",
+            "image": "https://images.unsplash.com/photo-1544959139-dadc3f6b98d8?w=500&h=500&fit=crop",
+            "location_address": "Salle SportRadar Lyon",
+            "start_time": now + timedelta(days=9, hours=19),
+            "duration": timedelta(hours=1),
+            "max_participants": 25,
+            "price": "10.00",
+            "level": Activity.LevelChoices.ALL,
+            "venue": Activity.VenueChoices.INDOOR,
+            "sport_zen": False,
+            "company": companies["SportRadar Lyon"],
+            "instructor": coaches["alex_martin"],
+        },
+        {
+            "name": "Stretching & Relaxation",
+            "description": "Seance d'assouplissement et detente musculaire.",
+            "category": "Bien-etre",
+            "image": "https://images.unsplash.com/photo-1576091160550-112667149a52?w=500&h=500&fit=crop",
+            "location_address": "Salle SportRadar Lyon",
+            "start_time": now + timedelta(days=6, hours=17),
+            "duration": timedelta(hours=1),
+            "max_participants": 16,
+            "price": "9.00",
+            "level": Activity.LevelChoices.ALL,
+            "venue": Activity.VenueChoices.INDOOR,
+            "sport_zen": True,
+            "company": companies["SportRadar Lyon"],
+            "instructor": coaches["alex_martin"],
         },
     ]
 
     created_count = 0
     for activity in activities:
+        company = activity.pop("company")
+        instructor = activity.pop("instructor")
         _, was_created = Activity.objects.update_or_create(
             name=activity["name"],
             company=company,
             defaults={
                 **activity,
                 "company": company,
-                "instructor": coach,
+                "instructor": instructor,
                 "is_public": True,
             },
         )
