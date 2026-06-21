@@ -16,6 +16,12 @@ IS_PRODUCTION = 'RENDER' in os.environ
 SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-une-cle-locale-par-defaut-NON-SECURISEE')
 DEBUG = not IS_PRODUCTION
 
+# --- Debug override for troubleshooting in production (temporary only) ---
+if os.getenv('FORCE_DEBUG', 'False').lower() in ('1', 'true', 'yes'):
+    DEBUG = True
+    # Allow all hosts temporarily to make testing easier; override with care
+    ALLOWED_HOSTS = ['*']
+
 # --- 3. Configuration des hôtes (ALLOWED_HOSTS) ---
 ALLOWED_HOSTS = []
 if IS_PRODUCTION:
@@ -199,3 +205,32 @@ CLOUDINARY_STORAGE = {
 
 # --- 15. Clés d'API externes ---
 OPENWEATHER_API_KEY = os.getenv('OPENWEATHER_API_KEY')
+
+# --- Logging: console + file (helpful to capture stack traces in hosting logs) ---
+LOG_LEVEL = 'DEBUG' if DEBUG else 'INFO'
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '%(levelname)s %(asctime)s %(module)s %(process)d %(thread)d %(message)s'
+        },
+        'simple': {'format': '%(levelname)s %(message)s'},
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
+        },
+        'file': {
+            'class': 'logging.FileHandler',
+            'filename': str(BASE_DIR / 'error.log'),
+            'formatter': 'verbose',
+            'level': 'ERROR',
+        },
+    },
+    'root': {
+        'handlers': ['console', 'file'],
+        'level': LOG_LEVEL,
+    },
+}
