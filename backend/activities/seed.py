@@ -141,18 +141,32 @@ def create_demo_data():
         email = coach_data.pop("email")
         username = coach_data.pop("username")
         password = coach_data.pop("password")
-        coach, created = CustomUser.objects.update_or_create(
-            email=email,
-            defaults={
-                "username": username,
-                "type": CustomUser.USER_TYPE_COACH,
-                "is_active": True,
+        
+        # Try to get existing coach by email or username
+        coach = None
+        try:
+            coach = CustomUser.objects.get(email=email)
+        except CustomUser.DoesNotExist:
+            try:
+                coach = CustomUser.objects.get(username=username)
+            except CustomUser.DoesNotExist:
+                pass
+        
+        if coach:
+            # Update existing coach
+            created = False
+        else:
+            # Create new coach if not found
+            coach = CustomUser.objects.create_user(
+                email=email,
+                username=username,
+                password=password,
+                type=CustomUser.USER_TYPE_COACH,
+                is_active=True,
                 **{k: v for k, v in coach_data.items() if k != "password"},
-            },
-        )
-        if created or not coach.has_usable_password():
-            coach.set_password(password)
-            coach.save(update_fields=["password"])
+            )
+            created = True
+        
         coaches[username] = coach
 
     now = timezone.now()
