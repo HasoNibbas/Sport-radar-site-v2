@@ -1,6 +1,5 @@
 # activities/views.py
 
-from django.utils import timezone
 from rest_framework import viewsets, permissions, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -49,8 +48,10 @@ class ActivityViewSet(viewsets.ModelViewSet):
         """
         qs = super().get_queryset()
         if self.action == 'list':
-            # Pour la liste publique, on ne montre que les activités futures et publiques.
-            return qs.filter(is_public=True, start_time__gt=timezone.now())
+            # Keep public activities visible even after their scheduled start time.
+            # This lets visitors browse the existing catalogue and prevents the
+            # activities page from appearing empty when the seeded dates pass.
+            return qs.filter(is_public=True)
         # Pour les autres actions (retrieve, update...), on ne filtre pas ici.
         # Les permissions s'en chargeront.
         return qs
