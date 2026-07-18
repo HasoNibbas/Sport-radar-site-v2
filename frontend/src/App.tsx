@@ -50,6 +50,7 @@ import CompaniesPage from "./pages/CompaniesPage.tsx";
 import CoachesPage from "./pages/CoachesPage.tsx";
 import ActivityUpdate from "./pages/ActivityUpdate.tsx";
 import ServicesPage from "./pages/ServicesPage.tsx";
+import ProfessionalsPage from './pages/ProfessionalsPage';
 
 function App() {
   return (
@@ -74,6 +75,7 @@ function App() {
               <Route path="/coaches" element={<CoachesPage />} />
 
               <Route path="/services" element={<ServicesPage/>} />
+              <Route path="/professionnels" element={<ProfessionalsPage />} />
 
               {/* B2C Authenticated */}
               <Route path="/dashboard" element={<PrivateRoute><DashboardPage /></PrivateRoute>} />

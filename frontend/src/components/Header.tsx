@@ -28,7 +28,7 @@ const Header: React.FC = () => {
                 className="h-16"
             />
           </Link>
-          <nav className="flex items-center gap-6 text-white font-bold">
+          <nav className="flex flex-wrap items-center justify-end gap-4 text-sm font-bold text-white sm:gap-6 sm:text-base" aria-label="Navigation principale">
             <Link
                 to="/"
                 onClick={() => window.scrollTo(0, 0)}
@@ -68,6 +68,13 @@ const Header: React.FC = () => {
                       className="hover:text-[#c44d00] transition-colors"
                   >
                     Nos Services
+                  </Link>
+                  <Link
+                      to="/professionnels"
+                      onClick={() => window.scrollTo(0, 0)}
+                      className="hover:text-[#c44d00] transition-colors focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-[#8F8C8C]"
+                  >
+                    Professionnels
                   </Link>
                   <Link
                       to="/login"
