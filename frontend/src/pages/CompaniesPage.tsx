@@ -8,6 +8,13 @@ import {getMediaUrl} from "../utils/media.ts";
 
 const ITEMS_PER_PAGE = 12;
 
+type CompanyListResponse = Company[] | { results?: Company[] };
+
+const toCompanyList = (data: CompanyListResponse): Company[] => {
+    if (Array.isArray(data)) return data;
+    return Array.isArray(data?.results) ? data.results : [];
+};
+
 const CompaniesPage: React.FC = () => {
     const [companies, setCompanies] = useState<Company[]>([]);
     const [loading, setLoading] = useState(true);
@@ -22,8 +29,8 @@ const CompaniesPage: React.FC = () => {
         const fetchCompanies = async () => {
             setLoading(true);
             try {
-                const response = await axiosInstance.get<Company[]>('/api/companies/');
-                setCompanies(response.data);
+                const response = await axiosInstance.get<CompanyListResponse>('/api/companies/');
+                setCompanies(toCompanyList(response.data));
 
             } catch (error) {
                 console.error("Erreur lors du chargement des salles de sport:", error);

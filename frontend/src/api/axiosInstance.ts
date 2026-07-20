@@ -9,6 +9,8 @@ const PUBLIC_ENDPOINTS = [
   '/api/weather/',
   '/api/places/',
   '/api/activities/',
+  '/api/companies/',
+  '/api/coaches/',
 ];
 
 export const API_BASE_URL =

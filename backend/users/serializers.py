@@ -41,7 +41,8 @@ class UserReadSerializer(serializers.ModelSerializer):
         model = User
         fields = [
             'id', 'email', 'username', 'first_name', 'last_name',
-            'type', 'company', 'avatar', 'preferences', 'is_staff','numero_siret'
+            'type', 'company', 'avatar', 'preferences', 'is_staff', 'is_active',
+            'numero_siret'
         ]
         # Tous les champs sont en lecture seule par défaut dans ce serializer.
         read_only_fields = fields

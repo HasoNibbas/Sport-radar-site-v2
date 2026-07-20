@@ -101,7 +101,11 @@ class CompanyViewSet(viewsets.ModelViewSet):
 
         # Récupérer toutes les activités de cette entreprise
         # activities est la relation inverse de company dans le modèle Activity
-        activities = company.activities.all()
+        # This endpoint is public, so it must not expose activities hidden by
+        # their owner. Keep the ordering consistent with the global catalogue.
+        activities = company.activities.filter(is_public=True).select_related(
+            'company', 'instructor'
+        ).prefetch_related('ratings', 'bookings').order_by('start_time')
 
         # Import local pour éviter l'importation circulaire
         from activities.serializers import ActivitySerializer

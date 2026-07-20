@@ -24,6 +24,13 @@ interface Company {
     sport_zen: boolean;
 }
 
+type ListResponse<T> = T[] | { results?: T[] };
+
+const toList = <T,>(data: ListResponse<T>): T[] => {
+    if (Array.isArray(data)) return data;
+    return Array.isArray(data?.results) ? data.results : [];
+};
+
 const CompanyDetailPage: React.FC = () => {
     // 1. Récupération de l'ID de la salle de sport depuis l'URL
     const { id } = useParams<{ id: string }>();
@@ -44,15 +51,14 @@ const CompanyDetailPage: React.FC = () => {
         // ✅ Faire 3 appels API en parallèle
         Promise.all([
             axiosInstance.get<Company>(`/api/companies/${id}/`),
-
-            axiosInstance.get<Activity[]>(`/api/companies/${id}/activities/`)
+            axiosInstance.get<ListResponse<CoachUser>>(`/api/companies/${id}/coaches/`),
+            axiosInstance.get<ListResponse<Activity>>(`/api/companies/${id}/activities/`)
         ])
-            .then(([companyResponse, activitiesResponse]) => {
+            .then(([companyResponse, coachesResponse, activitiesResponse]) => {
                 setCompany(companyResponse.data);
-                setActivities(activitiesResponse.data);
+                setActivities(toList(activitiesResponse.data));
 
-                const instructorsFromActivities = activitiesResponse.data
-                    .map(activity => activity?.instructor)
+                const instructorsFromActivities = toList(coachesResponse.data)
                     // 2. ✅ FILTRER les valeurs null ET s'assurer que ce sont bien des coachs
                     .filter((instructor): instructor is CoachUser =>
                         instructor !== null &&

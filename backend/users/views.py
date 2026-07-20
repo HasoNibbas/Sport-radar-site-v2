@@ -158,7 +158,10 @@ class CoachViewSet(viewsets.ReadOnlyModelViewSet):
     ayant le rôle de 'coach'.
     """
     # Le queryset filtre directement pour ne garder que les coachs.
-    queryset = User.objects.filter(type=User.USER_TYPE_COACH).order_by('first_name')
+    queryset = User.objects.filter(
+        type=User.USER_TYPE_COACH,
+        is_active=True,
+    ).select_related('company').order_by('first_name', 'last_name', 'username')
 
     # On utilise le serializer de lecture pour ne pas exposer de données sensibles.
     serializer_class = UserReadSerializer
